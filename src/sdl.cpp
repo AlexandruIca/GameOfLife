@@ -1,12 +1,15 @@
 #include "sdl.hpp"
 
 #include <SDL.h>
+#include <spdlog/spdlog.h>
 
 namespace sdl {
 
 initializer::initializer() noexcept
 {
-    SDL_Init(SDL_INIT_VIDEO);
+    if(SDL_Init(SDL_INIT_VIDEO) != 0) {
+        spdlog::error("Couldn't initialize SDL: {}", SDL_GetError());
+    }
 }
 
 initializer::~initializer() noexcept
