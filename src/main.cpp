@@ -1,6 +1,6 @@
-#include <SDL.h>
+#include "sdl.hpp"
 
 auto main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) noexcept -> int
 {
-    SDL_Init(SDL_INIT_VIDEO);
+    sdl::initializer::initialize();
 }
