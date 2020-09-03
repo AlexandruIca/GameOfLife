@@ -1,6 +1,7 @@
 [requires]
 glad/0.1.33
 sdl2/2.0.12@bincrafters/stable
+spdlog/1.7.0
 
 [generators]
 cmake_find_package
@@ -8,3 +9,4 @@ cmake_find_package
 [options]
 glad:shared=False
 sdl2:shared=False
+spdlog:shared=False

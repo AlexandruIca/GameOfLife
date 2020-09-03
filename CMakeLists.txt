@@ -21,6 +21,7 @@ set_project_warnings(project_warnings)
 enable_sanitizers(project_options)
 enable_coverage(project_options)
 
+find_package(spdlog REQUIRED)
 find_package(SDL2 REQUIRED)
 find_package(glad REQUIRED)
 
