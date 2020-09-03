@@ -1,5 +1,5 @@
 ---
-Checks: '*,-fuchsia-*,-google-*,-zircon-*,-abseil-*,-llvm-*,-hicpp-signed-bitwise'
+Checks: '*,-fuchsia-*,-google-*,-zircon-*,-abseil-*,-llvm-*,-hicpp-signed-bitwise,-cppcoreguidelines-macro-usage'
 WarningsAsErrors: '1'
 HeaderFilterRegex: ''
 FormatStyle: none
