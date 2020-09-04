@@ -4,6 +4,8 @@
 #include "log.hpp"
 
 #include <glad/glad.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <cstddef>
 #include <cstdlib>
@@ -74,9 +76,74 @@ struct program_description
     return program;
 }
 
+auto set_mat4(unsigned int program, std::string const& var, glm::mat4 const& mat) noexcept -> void
+{
+    glUniformMatrix4fv(glGetUniformLocation(program, var.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
+}
+
 } // namespace
 
 namespace gol {
+
+camera::camera(glm::vec3 const& pos, glm::quat const& orient) noexcept
+    : m_pos{ pos }
+    , m_orient{ orient }
+{
+}
+camera::camera(glm::vec3 const& pos) noexcept
+    : camera(pos, glm::quat{})
+{
+}
+
+auto camera::position() const noexcept -> glm::vec3 const&
+{
+    return m_pos;
+}
+
+auto camera::orientation() const noexcept -> glm::quat const&
+{
+    return m_orient;
+}
+
+auto camera::view() const noexcept -> glm::mat4
+{
+    return glm::translate(glm::mat4_cast(m_orient), m_pos);
+}
+
+auto camera::translate(glm::vec3 const& v) noexcept -> void
+{
+    m_pos += v * m_orient;
+}
+
+auto camera::translate(float const x, float const y, float const z)
+{
+    this->translate(glm::vec3{ x, y, z });
+}
+
+auto camera::rotate(float const angle, glm::vec3 const& axis) noexcept -> void
+{
+    m_orient *= glm::angleAxis(angle, axis * m_orient);
+}
+
+auto camera::rotate(float const angle, float const x, float const y, float const z) noexcept -> void
+{
+    this->rotate(angle, glm::vec3{ x, y, z });
+}
+
+auto camera::yaw(float const angle) noexcept -> void
+{
+    this->rotate(angle, 0.0F, 1.0F, 0.0F);
+}
+
+auto camera::pitch(float const angle) noexcept -> void
+{
+    this->rotate(angle, 1.0F, 0.0F, 0.0F);
+}
+
+auto camera::roll(float const angle) noexcept -> void
+{
+    this->rotate(angle, 0.0F, 0.0F, 1.0F);
+}
 
 span::span(vertex& v) noexcept
     : m_ptr{ &v }
@@ -179,10 +246,13 @@ view::view(int const w, int const h)
     layout(location = 0) in vec2 pos;
     layout(location = 1) in vec3 color;
 
+    uniform mat4 projection;
+    uniform mat4 view;
+
     out vec4 f_color;
 
     void main() {
-        gl_Position = vec4(pos, 0.0, 1.0);
+        gl_Position = projection * view * vec4(pos, 0.0, 1.0);
         f_color = vec4(color, 1.0);
     }
     )";
@@ -199,6 +269,11 @@ view::view(int const w, int const h)
     )";
 
     m_program = create_program(desc);
+
+    glUseProgram(m_program);
+    set_mat4(m_program, "projection", glm::perspective(m_fov, m_aspect_ratio, m_near, m_far));
+    set_mat4(m_program, "view", m_camera.view());
+    glUseProgram(0);
 
     glGenVertexArrays(1, &m_vao);
     glBindVertexArray(m_vao);
@@ -334,6 +409,22 @@ auto view::update() noexcept -> void
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+    glUseProgram(0);
+}
+
+auto view::set_aspect_ratio(float const a) noexcept -> void
+{
+    m_aspect_ratio = a;
+    glUseProgram(m_program);
+    set_mat4(m_program, "projection", glm::perspective(m_fov, a, m_near, m_far));
+    glUseProgram(0);
+}
+
+auto view::set_fov(float const fov) noexcept -> void
+{
+    m_fov = fov;
+    glUseProgram(m_program);
+    set_mat4(m_program, "projection", glm::perspective(fov, m_aspect_ratio, m_near, m_far));
     glUseProgram(0);
 }
 

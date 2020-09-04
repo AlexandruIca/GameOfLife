@@ -7,9 +7,45 @@
 #include <set>
 #include <vector>
 
+#include <glm/glm.hpp>
+#include <glm/gtx/quaternion.hpp>
+
 #include "coord.hpp"
 
 namespace gol {
+
+class camera
+{
+private:
+    glm::vec3 m_pos;
+    glm::quat m_orient;
+
+public:
+    camera() noexcept = default;
+    camera(camera const&) noexcept = default;
+    camera(camera&&) noexcept = default;
+    ~camera() noexcept = default;
+
+    camera(glm::vec3 const& pos, glm::quat const& orient) noexcept;
+    explicit camera(glm::vec3 const& pos) noexcept;
+
+    auto operator=(camera const&) noexcept -> camera& = default;
+    auto operator=(camera&&) noexcept -> camera& = default;
+
+    [[nodiscard]] auto position() const noexcept -> glm::vec3 const&;
+    [[nodiscard]] auto orientation() const noexcept -> glm::quat const&;
+    [[nodiscard]] auto view() const noexcept -> glm::mat4;
+
+    auto translate(glm::vec3 const& v) noexcept -> void;
+    auto translate(float x, float y, float z);
+
+    auto rotate(float angle, glm::vec3 const& axis) noexcept -> void;
+    auto rotate(float angle, float x, float y, float z) noexcept -> void;
+
+    auto yaw(float angle) noexcept -> void;
+    auto pitch(float angle) noexcept -> void;
+    auto roll(float angle) noexcept -> void;
+};
 
 struct vertex
 {
@@ -69,6 +105,17 @@ private:
     int m_width = 0;
     int m_height = 0;
 
+    static constexpr float s_default_fov = 45.0F;
+    static constexpr float s_default_near = 0.1F;
+    static constexpr float s_default_far = 100.0F;
+    static constexpr float s_default_cam_offset = -1.0F;
+
+    float m_aspect_ratio = 1.0F;
+    float m_fov = s_default_fov;
+    float m_near = s_default_near;
+    float m_far = s_default_far;
+    camera m_camera{ glm::vec3{ 0.0F, 0.0F, s_default_cam_offset }, glm::vec3{ 0.0F, 0.0F, 0.0F } };
+
     static constexpr float s_cell_dim = 0.1F;
     static constexpr int s_vertices_per_cell = 4;
 
@@ -100,6 +147,9 @@ public:
     auto set_dead_cell_color(float r, float g, float b) noexcept -> void;
 
     auto update() noexcept -> void;
+
+    auto set_aspect_ratio(float a) noexcept -> void;
+    auto set_fov(float fov) noexcept -> void;
 };
 
 } // namespace gol

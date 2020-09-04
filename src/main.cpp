@@ -64,7 +64,10 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) noexcept -> 
         }
     });
 
-    window.on_resize([](int const w, int const h) noexcept -> void { TRACE("Window resized: w={}, h={}", w, h); });
+    window.on_resize([&view](int const w, int const h) noexcept -> void {
+        TRACE("Window resized: w={}, h={}", w, h);
+        view.set_aspect_ratio(static_cast<float>(w) / static_cast<float>(h));
+    });
 
     while(!window.should_close()) {
         window.handle_events();
