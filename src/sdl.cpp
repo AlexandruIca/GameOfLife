@@ -52,6 +52,8 @@ window::window(std::string const& title, int const w, int const h) noexcept
     [[maybe_unused]] auto const glad_loaded = gladLoadGLLoader(static_cast<GLADloadproc>(SDL_GL_GetProcAddress));
     ASSERT(glad_loaded != 0);
 
+    SDL_GL_SetSwapInterval(1);
+
     INFO("OpenGL context created! Version {}.{}", GLVersion.major, GLVersion.minor);
 }
 
