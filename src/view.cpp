@@ -17,7 +17,7 @@ struct program_description
     std::string fragment_shader_source;
 };
 
-[[nodiscard]] auto create_shader(std::string const& source, int const type) -> unsigned int
+[[nodiscard]] auto create_shader(std::string const& source, unsigned int const type) -> unsigned int
 {
     unsigned int shader = glCreateShader(type);
 
@@ -34,7 +34,7 @@ struct program_description
 
         glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &len);
         msg.resize(static_cast<std::size_t>(len));
-        glGetShaderInfoLog(shader, msg.size(), nullptr, msg.data());
+        glGetShaderInfoLog(shader, static_cast<int>(msg.size()), nullptr, msg.data());
 
         std::string const shader_type = (type == GL_VERTEX_SHADER ? "vertex" : "fragment");
         FATAL("Compilation of {} shader failed: {}", shader_type, msg);
@@ -63,7 +63,7 @@ struct program_description
 
         glGetProgramiv(program, GL_INFO_LOG_LENGTH, &len);
         msg.resize(static_cast<std::size_t>(len));
-        glGetProgramInfoLog(program, msg.size(), nullptr, msg.data());
+        glGetProgramInfoLog(program, static_cast<int>(msg.size()), nullptr, msg.data());
 
         FATAL("Program could not be linked: {}", msg);
     }
@@ -205,7 +205,8 @@ view::view(int const w, int const h)
 
     glGenBuffers(1, &m_vbo);
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-    glBufferData(GL_ARRAY_BUFFER, m_cells.size() * sizeof(vertex), m_cells.data(), GL_DYNAMIC_DRAW);
+    glBufferData(
+        GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(m_cells.size() * sizeof(vertex)), m_cells.data(), GL_DYNAMIC_DRAW);
 
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), nullptr);
     glEnableVertexAttribArray(0);
@@ -216,7 +217,10 @@ view::view(int const w, int const h)
 
     glGenBuffers(1, &m_ibo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_indices.size() * sizeof(unsigned int), m_indices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+                 static_cast<GLsizeiptr>(m_indices.size() * sizeof(unsigned int)),
+                 m_indices.data(),
+                 GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -255,12 +259,12 @@ auto view::set_alive_impl(coord const pos) noexcept -> void
         cell[i].b = m_cell_color.b;
     }
 
+    auto const offset =
+        static_cast<unsigned long>(pos.y * m_width * s_vertices_per_cell + pos.x * s_vertices_per_cell) *
+        sizeof(vertex);
+
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-    glBufferSubData(GL_ARRAY_BUFFER,
-                    static_cast<unsigned long>(pos.y * m_width * s_vertices_per_cell + pos.x * s_vertices_per_cell) *
-                        sizeof(vertex),
-                    sizeof(vertex) * s_vertices_per_cell,
-                    cell.ptr());
+    glBufferSubData(GL_ARRAY_BUFFER, static_cast<GLintptr>(offset), sizeof(vertex) * s_vertices_per_cell, cell.ptr());
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
@@ -277,12 +281,12 @@ auto view::set_dead_impl(coord const pos) noexcept -> void
         cell[i].b = m_dead_cell_color.b;
     }
 
+    auto const offset =
+        static_cast<unsigned long>(pos.y * m_width * s_vertices_per_cell + pos.x * s_vertices_per_cell) *
+        sizeof(vertex);
+
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-    glBufferSubData(GL_ARRAY_BUFFER,
-                    static_cast<unsigned long>(pos.y * m_width * s_vertices_per_cell + pos.x * s_vertices_per_cell) *
-                        sizeof(vertex),
-                    sizeof(vertex) * s_vertices_per_cell,
-                    cell.ptr());
+    glBufferSubData(GL_ARRAY_BUFFER, static_cast<GLintptr>(offset), sizeof(vertex) * s_vertices_per_cell, cell.ptr());
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
@@ -326,7 +330,7 @@ auto view::update() noexcept -> void
     glBindVertexArray(m_vao);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
 
-    glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, nullptr);
+    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(m_indices.size()), GL_UNSIGNED_INT, nullptr);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
