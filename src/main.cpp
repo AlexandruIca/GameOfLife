@@ -1,5 +1,6 @@
 #include "log.hpp"
 #include "sdl.hpp"
+#include "view.hpp"
 
 #include <string>
 
@@ -29,7 +30,19 @@ auto key_to_string(sdl::key_event const key) -> std::string
 
 auto main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) noexcept -> int
 {
+    constexpr int num_cells = 50;
+
     sdl::window window{ "GameOfLife" };
+    gol::view view{ num_cells, num_cells };
+
+    gol::coord const pos = { 25, 25 };
+    view.set_alive(pos);
+
+    gol::coord const pos2 = { 24, 24 };
+    view.set_alive(pos2);
+
+    gol::coord const pos3 = { 49, 49 };
+    view.set_alive(pos3);
 
     window.on_key_press([&window](sdl::key_event const ev) noexcept -> void {
         TRACE("{} pressed!", key_to_string(ev));
@@ -55,6 +68,7 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) noexcept -> 
 
     while(!window.should_close()) {
         window.handle_events();
+        view.update();
         window.swap_buffers();
     }
 }
