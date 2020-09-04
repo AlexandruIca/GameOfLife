@@ -93,9 +93,23 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) noexcept -> 
         TRACE("Left click released at (x={}, y={})", c.first, c.second);
     });
 
-    window.on_scroll([](sdl::mouse_coord_t const c) noexcept -> void {
+    window.on_scroll([&view, &elapsed](sdl::mouse_coord_t const c) noexcept -> void {
         if(c.second != 0) {
             TRACE("Scroll up/down");
+
+            float new_fov = view.get_fov() - static_cast<float>(c.second) * elapsed;
+
+            constexpr float fov_max = 45.0F;
+            constexpr float fov_min = 1.0F;
+
+            if(new_fov < fov_min) {
+                new_fov = fov_min;
+            }
+            if(new_fov > fov_max) {
+                new_fov = fov_max;
+            }
+
+            view.set_fov(new_fov);
         }
     });
 

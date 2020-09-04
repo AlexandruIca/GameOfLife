@@ -435,6 +435,11 @@ auto view::set_fov(float const fov) noexcept -> void
     glUseProgram(0);
 }
 
+auto view::get_fov() const noexcept -> float
+{
+    return m_fov;
+}
+
 auto view::translate(glm::vec3 const v) noexcept -> void
 {
     m_camera.translate(v);

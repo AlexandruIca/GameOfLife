@@ -151,6 +151,8 @@ public:
     auto set_aspect_ratio(float a) noexcept -> void;
     auto set_fov(float fov) noexcept -> void;
 
+    [[nodiscard]] auto get_fov() const noexcept -> float;
+
     auto translate(glm::vec3 v) noexcept -> void;
 };
 
