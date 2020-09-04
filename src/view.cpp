@@ -81,6 +81,13 @@ auto set_mat4(unsigned int program, std::string const& var, glm::mat4 const& mat
     glUniformMatrix4fv(glGetUniformLocation(program, var.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
 }
 
+auto update_cam(unsigned int program, std::string const& var, gol::camera const& cam) noexcept -> void
+{
+    glUseProgram(program);
+    set_mat4(program, var, cam.view());
+    glUseProgram(0);
+}
+
 } // namespace
 
 namespace gol {
@@ -426,6 +433,12 @@ auto view::set_fov(float const fov) noexcept -> void
     glUseProgram(m_program);
     set_mat4(m_program, "projection", glm::perspective(fov, m_aspect_ratio, m_near, m_far));
     glUseProgram(0);
+}
+
+auto view::translate(glm::vec3 const v) noexcept -> void
+{
+    m_camera.translate(v);
+    update_cam(m_program, "view", m_camera);
 }
 
 } // namespace gol
