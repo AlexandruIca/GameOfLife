@@ -99,8 +99,10 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) noexcept -> 
 
             float new_fov = view.get_fov() - static_cast<float>(c.second) * elapsed;
 
+            TRACE("New fov: {}", new_fov);
+
             constexpr float fov_max = 45.0F;
-            constexpr float fov_min = 1.0F;
+            constexpr float fov_min = 44.0F;
 
             if(new_fov < fov_min) {
                 new_fov = fov_min;
