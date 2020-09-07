@@ -173,6 +173,8 @@ public:
     }
 
     auto toggle_at(gol::coord const& pos) noexcept -> void;
+
+    [[nodiscard]] auto get_initial_alive_cells() const noexcept -> std::set<coord> const&;
 };
 
 } // namespace gol

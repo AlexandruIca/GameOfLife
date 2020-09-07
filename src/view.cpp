@@ -493,4 +493,9 @@ auto view::toggle_at(gol::coord const& pos) noexcept -> void
     }
 }
 
+auto view::get_initial_alive_cells() const noexcept -> std::set<coord> const&
+{
+    return m_initial_alive_cells;
+}
+
 } // namespace gol
