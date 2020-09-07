@@ -95,6 +95,7 @@ namespace gol {
 camera::camera(glm::vec3 const& pos, glm::quat const& orient) noexcept
     : m_pos{ pos }
     , m_orient{ orient }
+    , m_translation{ 0, 0, 0 }
 {
 }
 camera::camera(glm::vec3 const& pos) noexcept
@@ -120,6 +121,7 @@ auto camera::view() const noexcept -> glm::mat4
 auto camera::translate(glm::vec3 const& v) noexcept -> void
 {
     m_pos += v * m_orient;
+    m_translation += v;
 }
 
 auto camera::translate(float const x, float const y, float const z)
@@ -150,6 +152,11 @@ auto camera::pitch(float const angle) noexcept -> void
 auto camera::roll(float const angle) noexcept -> void
 {
     this->rotate(angle, 0.0F, 0.0F, 1.0F);
+}
+
+auto camera::translation() const noexcept -> glm::vec3 const&
+{
+    return m_translation;
 }
 
 span::span(vertex& v) noexcept
@@ -444,6 +451,26 @@ auto view::translate(glm::vec3 const v) noexcept -> void
 {
     m_camera.translate(v);
     update_cam(m_program, "view", m_camera);
+}
+
+auto view::view_matrix() const noexcept -> glm::mat4
+{
+    return m_camera.view();
+}
+
+auto view::projection_matrix() const noexcept -> glm::mat4
+{
+    return glm::perspective(m_fov, m_aspect_ratio, m_near, m_far);
+}
+
+auto view::near() const noexcept -> float
+{
+    return m_near;
+}
+
+auto view::translation() const noexcept -> glm::vec3 const&
+{
+    return m_camera.translation();
 }
 
 } // namespace gol

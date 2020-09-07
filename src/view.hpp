@@ -19,6 +19,7 @@ class camera
 private:
     glm::vec3 m_pos;
     glm::quat m_orient;
+    glm::vec3 m_translation;
 
 public:
     camera() noexcept = default;
@@ -45,6 +46,8 @@ public:
     auto yaw(float angle) noexcept -> void;
     auto pitch(float angle) noexcept -> void;
     auto roll(float angle) noexcept -> void;
+
+    [[nodiscard]] auto translation() const noexcept -> glm::vec3 const&;
 };
 
 struct vertex
@@ -154,6 +157,12 @@ public:
     [[nodiscard]] auto get_fov() const noexcept -> float;
 
     auto translate(glm::vec3 v) noexcept -> void;
+
+    [[nodiscard]] auto view_matrix() const noexcept -> glm::mat4;
+    [[nodiscard]] auto projection_matrix() const noexcept -> glm::mat4;
+
+    [[nodiscard]] auto near() const noexcept -> float;
+    [[nodiscard]] auto translation() const noexcept -> glm::vec3 const&;
 };
 
 } // namespace gol

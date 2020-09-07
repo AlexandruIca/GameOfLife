@@ -86,8 +86,19 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) noexcept -> 
         }
     });
 
-    window.on_left_click(
-        [](sdl::mouse_coord_t const c) noexcept -> void { TRACE("Left click at (x={}, y={})", c.first, c.second); });
+    window.on_left_click([&window, &view](sdl::mouse_coord_t const c) noexcept -> void {
+        TRACE("Left click at (x={}, y={})", c.first, c.second);
+        float const x = (2.0F * static_cast<float>(c.first)) / static_cast<float>(window.width()) - 1.0F;
+        float const y = -((2.0F * static_cast<float>(c.second)) / static_cast<float>(window.height()) - 1.0F);
+        float const z = 1.0F;
+        glm::vec3 ray_nds{ x, y, z };
+        glm::vec4 const ray_clip = glm::vec4{ ray_nds.x, ray_nds.y, -1.0F, 1.0F }; // NOLINT
+        glm::vec4 ray_eye = glm::inverse(view.projection_matrix()) * ray_clip;
+        ray_eye = glm::vec4(ray_eye.x, ray_eye.y, -1.0F, 0.0F); // NOLINT
+        glm::vec3 ray_wor = glm::inverse(view.view_matrix()) * ray_eye;
+        // ray_wor = glm::normalize(ray_wor);
+        TRACE("wx={}, wy={}", ray_wor.x, ray_wor.y); // NOLINT
+    });
 
     window.on_left_click_up([](sdl::mouse_coord_t const c) noexcept -> void {
         TRACE("Left click released at (x={}, y={})", c.first, c.second);
