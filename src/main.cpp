@@ -1,3 +1,4 @@
+#include "gol_scene.hpp"
 #include "log.hpp"
 #include "preview_scene.hpp"
 #include "sdl.hpp"
@@ -13,7 +14,10 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) noexcept -> 
 
     sdl::window window{ "GameOfLife" };
     gol::view view{ num_cells, num_cells };
-    gol::preview_scene scene;
+    gol::gol_scene scene;
+
+    gol::coord const pos = { 25, 25 };
+    view.set_alive(pos);
 
     scene.setup_event_handling(window, view);
 
