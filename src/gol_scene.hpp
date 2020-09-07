@@ -1,5 +1,5 @@
-#ifndef GOL_PREVIEW_SCENE_HPP
-#define GOL_PREVIEW_SCENE_HPP
+#ifndef GOL_GOL_SCENE_HPP
+#define GOL_GOL_SCENE_HPP
 #pragma once
 
 #include "coord.hpp"
@@ -17,6 +17,7 @@ private:
     float m_elapsed = 0.0F;
     gol::coord m_last_mouse_coord = { 0, 0 };
     bool m_dragging = false;
+    bool m_finished = false;
 
 public:
     gol_scene() noexcept = default;
@@ -29,6 +30,7 @@ public:
 
     auto setup_event_handling(sdl::window& window, gol::view& view) noexcept -> void override;
     auto update(float elapsed) noexcept -> void override;
+    [[nodiscard]] auto finished() const noexcept -> bool override;
 };
 
 } // namespace gol

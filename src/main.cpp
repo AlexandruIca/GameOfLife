@@ -4,8 +4,10 @@
 #include "sdl.hpp"
 #include "view.hpp"
 
-#include <algorithm>
+#include <array>
 #include <chrono>
+#include <memory>
+#include <queue>
 #include <string>
 
 auto main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) noexcept -> int
@@ -14,12 +16,16 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) noexcept -> 
 
     sdl::window window{ "GameOfLife" };
     gol::view view{ num_cells, num_cells };
-    gol::gol_scene scene;
 
     gol::coord const pos = { 25, 25 };
     view.set_alive(pos);
 
-    scene.setup_event_handling(window, view);
+    std::queue<std::unique_ptr<gol::scene>> scene;
+
+    scene.push(std::make_unique<gol::preview_scene>());
+    scene.push(std::make_unique<gol::gol_scene>());
+
+    scene.front()->setup_event_handling(window, view);
 
     using namespace std::chrono;
     float elapsed = 0.0F;
@@ -32,8 +38,18 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) noexcept -> 
         start = end;
 
         window.handle_events();
-        scene.update(elapsed);
+        scene.front()->update(elapsed);
         view.update();
         window.swap_buffers();
+
+        if(scene.front()->finished()) {
+            scene.pop();
+
+            if(scene.empty()) {
+                window.request_close();
+                break;
+            }
+            scene.front()->setup_event_handling(window, view);
+        }
     }
 }

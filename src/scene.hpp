@@ -20,6 +20,7 @@ public:
 
     virtual auto setup_event_handling(sdl::window& window, gol::view& view) noexcept -> void = 0;
     virtual auto update(float elapsed) noexcept -> void = 0;
+    virtual auto finished() const noexcept -> bool = 0;
 };
 
 } // namespace gol

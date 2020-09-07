@@ -103,4 +103,9 @@ auto gol_scene::update(float const elapsed) noexcept -> void
     }
 }
 
+auto gol_scene::finished() const noexcept -> bool
+{
+    return m_finished;
+}
+
 } // namespace gol

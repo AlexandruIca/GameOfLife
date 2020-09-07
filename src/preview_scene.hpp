@@ -17,6 +17,7 @@ private:
     float m_elapsed = 0.0F;
     bool m_dragging = false;
     bool m_toggle = false;
+    bool m_finished = false;
     gol::coord m_last_coord = { -1, -1 };
 
 public:
@@ -30,6 +31,7 @@ public:
 
     auto setup_event_handling(sdl::window& window, gol::view& view) noexcept -> void override;
     auto update(float elapsed) noexcept -> void override;
+    [[nodiscard]] auto finished() const noexcept -> bool override;
 };
 
 } // namespace gol

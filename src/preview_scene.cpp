@@ -96,6 +96,10 @@ auto preview_scene::setup_event_handling(sdl::window& window, gol::view& view) n
             view.translate({ 0.0F, 0.0F, -s_translate_offset * m_elapsed });
             break;
         }
+        case sdl::key_event::vk_space: {
+            m_finished = true;
+            break;
+        }
         default: {
             break;
         }
@@ -157,6 +161,11 @@ auto preview_scene::update(float const elapsed) noexcept -> void
             m_view->toggle_at({ grid_x, grid_y });
         }
     }
+}
+
+auto preview_scene::finished() const noexcept -> bool
+{
+    return m_finished;
 }
 
 } // namespace gol
