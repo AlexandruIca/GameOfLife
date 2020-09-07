@@ -2,6 +2,7 @@
 #include "sdl.hpp"
 #include "view.hpp"
 
+#include <algorithm>
 #include <chrono>
 #include <string>
 
@@ -112,16 +113,10 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) noexcept -> 
 
             TRACE("New fov: {}", new_fov);
 
-            constexpr float fov_max = 45.0F;
+            constexpr float fov_max = 47.1F;
             constexpr float fov_min = 44.0F;
 
-            if(new_fov < fov_min) {
-                new_fov = fov_min;
-            }
-            if(new_fov > fov_max) {
-                new_fov = fov_max;
-            }
-
+            new_fov = std::clamp(new_fov, fov_min, fov_max);
             view.set_fov(new_fov);
         }
     });
