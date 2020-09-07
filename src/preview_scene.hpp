@@ -2,6 +2,7 @@
 #define GOL_PREVIEW_SCENE_HPP
 #pragma once
 
+#include "coord.hpp"
 #include "scene.hpp"
 
 namespace gol {
@@ -11,7 +12,12 @@ class preview_scene : public scene
 private:
     static constexpr int s_translate_offset = 10.0F;
 
+    sdl::window* m_window = nullptr;
+    gol::view* m_view = nullptr;
     float m_elapsed = 0.0F;
+    bool m_dragging = false;
+    bool m_toggle = false;
+    gol::coord m_last_coord = { -1, -1 };
 
 public:
     preview_scene() noexcept = default;
