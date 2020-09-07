@@ -17,30 +17,8 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) noexcept -> 
 
     scene.setup_event_handling(window, view);
 
-    float elapsed = 0.0F;
-
-    window.on_scroll([&view, &elapsed](sdl::mouse_coord_t const c) noexcept -> void {
-        if(c.second != 0) {
-            TRACE("Scroll up/down");
-
-            float new_fov = view.get_fov() - static_cast<float>(c.second) * elapsed;
-
-            TRACE("New fov: {}", new_fov);
-
-            constexpr float fov_max = 47.1F;
-            constexpr float fov_min = 44.0F;
-
-            new_fov = std::clamp(new_fov, fov_min, fov_max);
-            view.set_fov(new_fov);
-        }
-    });
-
-    window.on_resize([&view](int const w, int const h) noexcept -> void {
-        TRACE("Window resized: w={}, h={}", w, h);
-        view.set_aspect_ratio(static_cast<float>(w) / static_cast<float>(h));
-    });
-
     using namespace std::chrono;
+    float elapsed = 0.0F;
     auto start = steady_clock::now();
     constexpr float to_seconds = 1000.0F;
 
