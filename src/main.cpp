@@ -58,11 +58,11 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) noexcept -> 
             break;
         }
         case sdl::key_event::vk_up: {
-            view.translate({ 0.0F, 0.0F, translate_offset * elapsed });
+            view.translate({ 0.0F, -translate_offset * elapsed, 0.0F });
             break;
         }
         case sdl::key_event::vk_down: {
-            view.translate({ 0.0F, 0.0F, -translate_offset * elapsed });
+            view.translate({ 0.0F, translate_offset * elapsed, 0.0F });
             break;
         }
         case sdl::key_event::vk_left: {
@@ -74,11 +74,11 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) noexcept -> 
             break;
         }
         case sdl::key_event::vk_w: {
-            view.translate({ 0.0F, -translate_offset * elapsed, 0.0F });
+            view.translate({ 0.0F, 0.0F, translate_offset * elapsed });
             break;
         }
         case sdl::key_event::vk_s: {
-            view.translate({ 0.0F, translate_offset * elapsed, 0.0F });
+            view.translate({ 0.0F, 0.0F, -translate_offset * elapsed });
             break;
         }
         default: {
