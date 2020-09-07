@@ -1,34 +1,11 @@
 #include "log.hpp"
+#include "preview_scene.hpp"
 #include "sdl.hpp"
 #include "view.hpp"
 
 #include <algorithm>
 #include <chrono>
 #include <string>
-
-auto key_to_string(sdl::key_event const key) -> std::string
-{
-    switch(key) {
-    case sdl::key_event::vk_up:
-        return "UP";
-    case sdl::key_event::vk_down:
-        return "DOWN";
-    case sdl::key_event::vk_left:
-        return "LEFT";
-    case sdl::key_event::vk_right:
-        return "RIGHT";
-    case sdl::key_event::vk_w:
-        return "W";
-    case sdl::key_event::vk_s:
-        return "S";
-    case sdl::key_event::vk_space:
-        return "SPACE";
-    case sdl::key_event::vk_escape:
-        return "ESCAPE";
-    default:
-        return "unknown";
-    }
-}
 
 [[nodiscard]] auto screen_to_grid(sdl::window& window, gol::view& view, sdl::mouse_coord_t const c) noexcept
     -> gol::coord
@@ -59,7 +36,6 @@ auto key_to_string(sdl::key_event const key) -> std::string
 auto main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) noexcept -> int
 {
     constexpr int num_cells = 50;
-    constexpr float translate_offset = 10.0F;
 
     sdl::window window{ "GameOfLife" };
     gol::view view{ num_cells, num_cells };
@@ -76,42 +52,9 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) noexcept -> 
     using namespace std::chrono;
     float elapsed = 0.0F;
 
-    window.on_key_press([&window, &view, &elapsed](sdl::key_event const ev) noexcept -> void {
-        TRACE("{} pressed!", key_to_string(ev));
-        switch(ev) {
-        case sdl::key_event::vk_escape: {
-            window.request_close();
-            break;
-        }
-        case sdl::key_event::vk_up: {
-            view.translate({ 0.0F, -translate_offset * elapsed, 0.0F });
-            break;
-        }
-        case sdl::key_event::vk_down: {
-            view.translate({ 0.0F, translate_offset * elapsed, 0.0F });
-            break;
-        }
-        case sdl::key_event::vk_left: {
-            view.translate({ translate_offset * elapsed, 0.0F, 0.0F });
-            break;
-        }
-        case sdl::key_event::vk_right: {
-            view.translate({ -translate_offset * elapsed, 0.0F, 0.0F });
-            break;
-        }
-        case sdl::key_event::vk_w: {
-            view.translate({ 0.0F, 0.0F, translate_offset * elapsed });
-            break;
-        }
-        case sdl::key_event::vk_s: {
-            view.translate({ 0.0F, 0.0F, -translate_offset * elapsed });
-            break;
-        }
-        default: {
-            break;
-        }
-        }
-    });
+    gol::preview_scene scene;
+
+    scene.setup_event_handling(window, view);
 
     bool dragging = false;
     bool toggle = false;
@@ -174,6 +117,7 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) noexcept -> 
         }
 
         window.handle_events();
+        scene.update(elapsed);
         view.update();
         window.swap_buffers();
     }
