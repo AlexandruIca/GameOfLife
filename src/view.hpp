@@ -163,6 +163,16 @@ public:
 
     [[nodiscard]] auto near() const noexcept -> float;
     [[nodiscard]] auto translation() const noexcept -> glm::vec3 const&;
+
+    [[nodiscard]] auto width() const noexcept -> int;
+    [[nodiscard]] auto height() const noexcept -> int;
+
+    [[nodiscard]] constexpr static auto cell_dimension() noexcept -> float
+    {
+        return s_cell_dim;
+    }
+
+    auto toggle_at(gol::coord const& pos) noexcept -> void;
 };
 
 } // namespace gol

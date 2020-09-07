@@ -99,6 +99,19 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) noexcept -> 
         glm::vec3 ray_wor = glm::inverse(view.view_matrix()) * ray_eye;
         // ray_wor = glm::normalize(ray_wor);
         TRACE("wx={}, wy={}", ray_wor.x, ray_wor.y); // NOLINT
+
+        float const grid_width = static_cast<float>(view.width()) * gol::view::cell_dimension();
+        float const grid_height = static_cast<float>(view.height()) * gol::view::cell_dimension();
+
+        float const absx = ray_wor.x + grid_width / 2.0F;                                          // NOLINT
+        float const absy = std::abs(ray_wor.y - grid_height / 2.0F - gol::view::cell_dimension()); // NOLINT
+
+        auto const grid_x = static_cast<int>(absx / gol::view::cell_dimension());
+        auto const grid_y = static_cast<int>(absy / gol::view::cell_dimension());
+
+        if(grid_x >= 0 && grid_x < view.width() && grid_y >= 0 && grid_y < view.height()) {
+            view.toggle_at({ grid_x, grid_y });
+        }
     });
 
     window.on_left_click_up([](sdl::mouse_coord_t const c) noexcept -> void {

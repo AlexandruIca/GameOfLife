@@ -473,4 +473,24 @@ auto view::translation() const noexcept -> glm::vec3 const&
     return m_camera.translation();
 }
 
+auto view::width() const noexcept -> int
+{
+    return m_width;
+}
+
+auto view::height() const noexcept -> int
+{
+    return m_height;
+}
+
+auto view::toggle_at(gol::coord const& pos) noexcept -> void
+{
+    if(m_initial_alive_cells.find(pos) != m_initial_alive_cells.end()) {
+        this->set_dead(pos);
+    }
+    else {
+        this->set_alive(pos);
+    }
+}
+
 } // namespace gol
