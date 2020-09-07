@@ -59,7 +59,9 @@ auto gol_scene::setup_event_handling(sdl::window& window, gol::view& view) noexc
         m_dragging = false;
     });
 
-    window.on_scroll([]([[maybe_unused]] sdl::mouse_coord_t const c) noexcept -> void {});
+    window.on_scroll([this, &view](sdl::mouse_coord_t const c) noexcept -> void {
+        view.translate({ 0.0F, 0.0F, s_translate_offset * static_cast<float>(c.second) * m_elapsed });
+    });
 
     window.on_resize([&view](int const w, int const h) noexcept -> void {
         TRACE("[GOL Scene] Window resized: w={}, h={}", w, h);
