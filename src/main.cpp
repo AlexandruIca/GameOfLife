@@ -114,14 +114,17 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) noexcept -> 
     });
 
     bool dragging = false;
+    bool toggle = false;
+    gol::coord last_coord = { -1, -1 };
 
     window.on_left_click([&dragging](sdl::mouse_coord_t const c) noexcept -> void {
         TRACE("Left click at (x={}, y={})", c.first, c.second);
         dragging = true;
     });
 
-    window.on_left_click_up([&dragging](sdl::mouse_coord_t const c) noexcept -> void {
+    window.on_left_click_up([&dragging, &last_coord](sdl::mouse_coord_t const c) noexcept -> void {
         dragging = false;
+        last_coord = { -1, -1 };
         TRACE("Left click released at (x={}, y={})", c.first, c.second);
     });
 
@@ -148,9 +151,6 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) noexcept -> 
 
     auto start = steady_clock::now();
     constexpr float to_seconds = 1000.0F;
-
-    gol::coord last_coord = { -1, -1 };
-    bool toggle = false;
 
     while(!window.should_close()) {
         auto end = steady_clock::now();
