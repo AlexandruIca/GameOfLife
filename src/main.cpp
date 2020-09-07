@@ -30,6 +30,32 @@ auto key_to_string(sdl::key_event const key) -> std::string
     }
 }
 
+[[nodiscard]] auto screen_to_grid(sdl::window& window, gol::view& view, sdl::mouse_coord_t const c) noexcept
+    -> gol::coord
+{
+    float const x = (2.0F * static_cast<float>(c.first)) / static_cast<float>(window.width()) - 1.0F;
+    float const y = -((2.0F * static_cast<float>(c.second)) / static_cast<float>(window.height()) - 1.0F);
+    float const z = 1.0F;
+    glm::vec3 ray_nds{ x, y, z };
+    glm::vec4 const ray_clip = glm::vec4{ ray_nds.x, ray_nds.y, -1.0F, 1.0F }; // NOLINT
+    glm::vec4 ray_eye = glm::inverse(view.projection_matrix()) * ray_clip;
+    ray_eye = glm::vec4(ray_eye.x, ray_eye.y, -1.0F, 0.0F); // NOLINT
+    glm::vec3 ray_wor = glm::inverse(view.view_matrix()) * ray_eye;
+    // ray_wor = glm::normalize(ray_wor);
+    TRACE("wx={}, wy={}", ray_wor.x, ray_wor.y); // NOLINT
+
+    float const grid_width = static_cast<float>(view.width()) * gol::view::cell_dimension();
+    float const grid_height = static_cast<float>(view.height()) * gol::view::cell_dimension();
+
+    float const absx = ray_wor.x + grid_width / 2.0F;                                          // NOLINT
+    float const absy = std::abs(ray_wor.y - grid_height / 2.0F - gol::view::cell_dimension()); // NOLINT
+
+    auto const grid_x = static_cast<int>(absx / gol::view::cell_dimension());
+    auto const grid_y = static_cast<int>(absy / gol::view::cell_dimension());
+
+    return { grid_x, grid_y };
+}
+
 auto main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) noexcept -> int
 {
     constexpr int num_cells = 50;
@@ -87,34 +113,15 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) noexcept -> 
         }
     });
 
-    window.on_left_click([&window, &view](sdl::mouse_coord_t const c) noexcept -> void {
+    bool dragging = false;
+
+    window.on_left_click([&dragging](sdl::mouse_coord_t const c) noexcept -> void {
         TRACE("Left click at (x={}, y={})", c.first, c.second);
-        float const x = (2.0F * static_cast<float>(c.first)) / static_cast<float>(window.width()) - 1.0F;
-        float const y = -((2.0F * static_cast<float>(c.second)) / static_cast<float>(window.height()) - 1.0F);
-        float const z = 1.0F;
-        glm::vec3 ray_nds{ x, y, z };
-        glm::vec4 const ray_clip = glm::vec4{ ray_nds.x, ray_nds.y, -1.0F, 1.0F }; // NOLINT
-        glm::vec4 ray_eye = glm::inverse(view.projection_matrix()) * ray_clip;
-        ray_eye = glm::vec4(ray_eye.x, ray_eye.y, -1.0F, 0.0F); // NOLINT
-        glm::vec3 ray_wor = glm::inverse(view.view_matrix()) * ray_eye;
-        // ray_wor = glm::normalize(ray_wor);
-        TRACE("wx={}, wy={}", ray_wor.x, ray_wor.y); // NOLINT
-
-        float const grid_width = static_cast<float>(view.width()) * gol::view::cell_dimension();
-        float const grid_height = static_cast<float>(view.height()) * gol::view::cell_dimension();
-
-        float const absx = ray_wor.x + grid_width / 2.0F;                                          // NOLINT
-        float const absy = std::abs(ray_wor.y - grid_height / 2.0F - gol::view::cell_dimension()); // NOLINT
-
-        auto const grid_x = static_cast<int>(absx / gol::view::cell_dimension());
-        auto const grid_y = static_cast<int>(absy / gol::view::cell_dimension());
-
-        if(grid_x >= 0 && grid_x < view.width() && grid_y >= 0 && grid_y < view.height()) {
-            view.toggle_at({ grid_x, grid_y });
-        }
+        dragging = true;
     });
 
-    window.on_left_click_up([](sdl::mouse_coord_t const c) noexcept -> void {
+    window.on_left_click_up([&dragging](sdl::mouse_coord_t const c) noexcept -> void {
+        dragging = false;
         TRACE("Left click released at (x={}, y={})", c.first, c.second);
     });
 
@@ -142,10 +149,29 @@ auto main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) noexcept -> 
     auto start = steady_clock::now();
     constexpr float to_seconds = 1000.0F;
 
+    gol::coord last_coord = { -1, -1 };
+    bool toggle = false;
+
     while(!window.should_close()) {
         auto end = steady_clock::now();
         elapsed = static_cast<float>(duration_cast<milliseconds>(end - start).count()) / to_seconds;
         start = end;
+
+        if(dragging) {
+            auto const [grid_x, grid_y] = screen_to_grid(window, view, window.get_mouse_coord());
+
+            if(gol::coord{ grid_x, grid_y } != last_coord) {
+                toggle = true;
+                last_coord = { grid_x, grid_y };
+            }
+            else {
+                toggle = false;
+            }
+
+            if(toggle && grid_x >= 0 && grid_x < view.width() && grid_y >= 0 && grid_y < view.height()) {
+                view.toggle_at({ grid_x, grid_y });
+            }
+        }
 
         window.handle_events();
         view.update();
