@@ -191,8 +191,10 @@ auto span::ptr() noexcept -> vertex*
     return m_ptr;
 }
 
-view::view(int const w, int const h)
-    : m_width{ w }
+view::view(int const w, int const h, color const& a, color const& d)
+    : m_cell_color{ a }
+    , m_dead_cell_color{ d }
+    , m_width{ w }
     , m_height{ h }
 {
     ASSERT(w > 0);
@@ -216,20 +218,21 @@ view::view(int const w, int const h)
     for(int y = 0; y < h; ++y) {
         float fx = start_x;
         for(int x = 0; x < w; ++x) {
+            constexpr float offset = s_cell_offset;
             auto cell = span{ m_cells[index] };
 
             // top left
-            cell[0].x = fx;
-            cell[0].y = fy;
+            cell[0].x = fx + offset;
+            cell[0].y = fy + offset;
             // top right
-            cell[1].x = fx + s_cell_dim;
-            cell[1].y = fy;
+            cell[1].x = fx + s_cell_dim - offset;
+            cell[1].y = fy + offset;
             // bottom right
-            cell[2].x = fx + s_cell_dim;
-            cell[2].y = fy + s_cell_dim;
+            cell[2].x = fx + s_cell_dim - offset;
+            cell[2].y = fy + s_cell_dim - offset;
             // bottom left
-            cell[3].x = fx;
-            cell[3].y = fy + s_cell_dim;
+            cell[3].x = fx + offset;
+            cell[3].y = fy + s_cell_dim - offset;
 
             index += vertices_per_cell;
             fx += s_cell_dim;

@@ -108,6 +108,8 @@ private:
     int m_width = 0;
     int m_height = 0;
 
+    static constexpr float s_cell_offset = 0.01F;
+
     static constexpr float s_default_fov = 45.0F;
     static constexpr float s_default_near = 0.1F;
     static constexpr float s_default_far = 100.0F;
@@ -138,7 +140,7 @@ public:
     view(view&&) noexcept = default;
     ~view() noexcept;
 
-    view(int w, int h);
+    view(int w, int h, color const& a = s_default_cell_color, color const& d = s_default_dead_cell_color);
 
     auto operator=(view const&) -> view& = default;
     auto operator=(view&&) noexcept -> view& = default;
