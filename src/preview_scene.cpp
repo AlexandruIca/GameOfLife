@@ -106,12 +106,12 @@ auto preview_scene::setup_event_handling(sdl::window& window, gol::view& view) n
         }
     });
 
-    window.on_left_click([this](sdl::mouse_coord_t const c) noexcept -> void {
+    window.on_left_click([this]([[maybe_unused]] sdl::mouse_coord_t const c) noexcept -> void {
         TRACE("[Preview Scene] Left click at (x={}, y={})", c.first, c.second);
         m_dragging = true;
     });
 
-    window.on_left_click_up([this](sdl::mouse_coord_t const c) noexcept -> void {
+    window.on_left_click_up([this]([[maybe_unused]] sdl::mouse_coord_t const c) noexcept -> void {
         m_dragging = false;
         m_last_coord = { -1, -1 };
         TRACE("[Preview Scene] Left click released at (x={}, y={})", c.first, c.second);
