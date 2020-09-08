@@ -12,12 +12,12 @@
 
 auto main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) noexcept -> int
 {
-    constexpr int num_cells = 50;
+    constexpr int num_cells = 500;
 
     sdl::window window{ "GameOfLife" };
     gol::view view{ num_cells, num_cells };
 
-    gol::coord const pos = { 25, 25 };
+    gol::coord const pos = { num_cells / 2, num_cells / 2 };
     view.set_alive(pos);
 
     std::queue<std::unique_ptr<gol::scene>> scene;

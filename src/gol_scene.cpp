@@ -3,12 +3,68 @@
 #include "assert.hpp"
 
 #include <algorithm>
-#include <numeric>
+#include <array>
+#include <cstddef>
 
 namespace gol {
 
+auto gol_scene::cell_at(coord const pos) noexcept -> unsigned char&
+{
+    ASSERT(pos.x >= 0);
+    ASSERT(pos.y >= 0);
+    ASSERT(pos.x < m_width);
+    ASSERT(pos.y < m_height);
+
+    return m_grid[static_cast<std::size_t>(pos.y + 1) * static_cast<std::size_t>(m_width + 1) +
+                  static_cast<std::size_t>(pos.x + 1)];
+}
+
+auto gol_scene::cell_at(coord const pos) const noexcept -> unsigned char const&
+{
+    ASSERT(pos.x >= -1);
+    ASSERT(pos.y >= -1);
+    ASSERT(pos.x <= m_width);
+    ASSERT(pos.y <= m_height);
+
+    return m_grid[static_cast<std::size_t>(pos.y + 1) * static_cast<std::size_t>(m_width + 1) +
+                  static_cast<std::size_t>(pos.x + 1)];
+}
+
+auto gol_scene::initialize_grid(std::vector<coord> const& initial_alive_cells) noexcept -> void
+{
+    m_grid.resize(static_cast<std::size_t>(m_width + 2) * static_cast<std::size_t>(m_height + 2));
+    std::fill(m_grid.begin(), m_grid.end(), s_dead);
+
+    for(coord const& pos : initial_alive_cells) {
+        this->cell_at(pos) = s_alive;
+    }
+
+    m_events.resize(static_cast<std::size_t>(m_width) * static_cast<std::size_t>(m_height) + 1);
+}
+
+auto gol_scene::count_at(coord const pos) const noexcept -> int
+{
+    std::array<coord, 8> const neighbors = { coord{ pos.x - 1, pos.y - 1 }, coord{ pos.x, pos.y - 1 },
+                                             coord{ pos.x + 1, pos.y - 1 }, coord{ pos.x - 1, pos.y },
+                                             coord{ pos.x + 1, pos.y },     coord{ pos.x - 1, pos.y + 1 },
+                                             coord{ pos.x, pos.y + 1 },     coord{ pos.x + 1, pos.y + 1 } };
+    int count = 0;
+
+    for(auto const& neighbor : neighbors) {
+        count += this->cell_at(neighbor);
+    }
+
+    return count;
+}
+
 auto gol_scene::setup_event_handling(sdl::window& window, gol::view& view) noexcept -> void
 {
+    m_width = view.width();
+    m_height = view.height();
+
+    auto const& cells = view.get_initial_alive_cells();
+    this->initialize_grid(std::vector<coord>{ cells.begin(), cells.end() });
+
     m_window = &window;
     m_view = &view;
 
@@ -101,6 +157,36 @@ auto gol_scene::update(float const elapsed) noexcept -> void
         m_view->translate(glm::vec3{ translate_x, translate_y, 0.0F });
         m_last_mouse_coord = mouse_coord;
     }
+
+    constexpr int cell_target_die = 2;
+    constexpr int cell_target_live = 3;
+
+    for(int i = 0; i < m_height; ++i) {
+        for(int j = 0; j < m_width; ++j) {
+            auto const count = this->count_at({ j, i });
+            bool const alive = this->cell_at({ j, i }) == s_alive;
+
+            if(alive && ((count < cell_target_die) || (count > cell_target_live))) {
+                m_events.emplace_back(coord{ j, i }, false);
+            }
+            else if(!alive && count == cell_target_live) {
+                m_events.emplace_back(coord{ j, i }, true);
+            }
+        }
+    }
+
+    for(auto const& ev : m_events) {
+        if(ev.second) {
+            this->cell_at(ev.first) = s_alive;
+            m_view->set_alive(ev.first);
+        }
+        else {
+            this->cell_at(ev.first) = s_dead;
+            m_view->set_dead(ev.first);
+        }
+    }
+
+    m_events.clear();
 }
 
 auto gol_scene::finished() const noexcept -> bool
