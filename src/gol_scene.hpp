@@ -5,6 +5,9 @@
 #include "coord.hpp"
 #include "scene.hpp"
 
+#include "thread/ring_buffer.hpp"
+#include "thread/thread_pool.hpp"
+
 #include <utility>
 #include <vector>
 
@@ -16,10 +19,13 @@ private:
     static constexpr int s_translate_offset = 10.0F;
     static constexpr unsigned char s_alive = 1;
     static constexpr unsigned char s_dead = 0;
+    static constexpr int s_max_num_events = 51;
 
     std::vector<unsigned char> m_grid;
     // m_events[i].second == true <=> set_alive
-    std::vector<std::pair<coord, bool>> m_events;
+    gol::ring_buffer<std::vector<std::pair<coord, bool>>, s_max_num_events> m_events;
+    gol::threadpool m_threadpool{ 1 };
+    std::future<void> m_future;
     int m_width = 0;
     int m_height = 0;
     sdl::window* m_window = nullptr;
@@ -36,12 +42,12 @@ private:
 
 public:
     gol_scene() noexcept = default;
-    gol_scene(gol_scene const&) noexcept = default;
-    gol_scene(gol_scene&&) noexcept = default;
+    gol_scene(gol_scene const&) = delete;
+    gol_scene(gol_scene&&) noexcept = delete;
     ~gol_scene() noexcept override = default;
 
-    auto operator=(gol_scene const&) noexcept -> gol_scene& = default;
-    auto operator=(gol_scene&&) noexcept -> gol_scene& = default;
+    auto operator=(gol_scene const&) -> gol_scene& = delete;
+    auto operator=(gol_scene&&) noexcept -> gol_scene& = delete;
 
     auto setup_event_handling(sdl::window& window, gol::view& view) noexcept -> void override;
     auto update(float elapsed) noexcept -> void override;

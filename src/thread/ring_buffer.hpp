@@ -4,6 +4,7 @@
 
 #include <array>
 #include <atomic>
+#include <utility>
 
 namespace gol {
 
@@ -34,7 +35,7 @@ public:
     auto operator=(ring_buffer const&) -> ring_buffer& = default;
     auto operator=(ring_buffer&&) noexcept -> ring_buffer& = default;
 
-    auto push(T&& value) -> bool
+    auto push(T const& value) -> bool
     {
         std::size_t head = m_head.load(std::memory_order_relaxed);
         std::size_t next_head = next(head);
@@ -44,7 +45,7 @@ public:
             return false;
         }
 
-        m_ring.at(head) = std::forward<T>(value);
+        m_ring.at(head) = value;
         m_head.store(next_head, std::memory_order_release);
         return true;
     }

@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <array>
+#include <chrono>
 #include <cstddef>
 
 namespace gol {
@@ -38,8 +39,6 @@ auto gol_scene::initialize_grid(std::vector<coord> const& initial_alive_cells) n
     for(coord const& pos : initial_alive_cells) {
         this->cell_at(pos) = s_alive;
     }
-
-    m_events.resize(static_cast<std::size_t>(m_width) * static_cast<std::size_t>(m_height) + 1);
 }
 
 auto gol_scene::count_at(coord const pos) const noexcept -> int
@@ -67,6 +66,8 @@ auto gol_scene::setup_event_handling(sdl::window& window, gol::view& view) noexc
 
     m_window = &window;
     m_view = &view;
+
+    m_future = m_threadpool.push([] {});
 
     window.on_key_press([this, &window, &view](sdl::key_event const ev) noexcept -> void {
         switch(ev) {
@@ -132,6 +133,50 @@ auto gol_scene::update(float const elapsed) noexcept -> void
     ASSERT(m_window != nullptr);
     ASSERT(m_view != nullptr);
 
+    constexpr int cell_target_die = 2;
+    constexpr int cell_target_live = 3;
+
+    m_future.get();
+
+    std::vector<std::pair<coord, bool>> ev;
+
+    if(m_events.pop(ev)) {
+        for(auto& event : ev) {
+            if(event.second) {
+                this->cell_at(event.first) = s_alive;
+                m_view->set_alive(event.first);
+            }
+            else {
+                this->cell_at(event.first) = s_dead;
+                m_view->set_dead(event.first);
+            }
+        }
+    }
+
+    m_future = m_threadpool.push([this] {
+        static std::vector<std::pair<coord, bool>> events;
+
+        for(int i = 0; i < m_height; ++i) {
+            for(int j = 0; j < m_width; ++j) {
+                auto const count = this->count_at({ j, i });
+                bool const alive = this->cell_at({ j, i }) == s_alive;
+
+                if(alive && ((count < cell_target_die) || (count > cell_target_live))) {
+                    events.emplace_back(coord{ j, i }, false);
+                }
+                else if(!alive && count == cell_target_live) {
+                    events.emplace_back(coord{ j, i }, true);
+                }
+            }
+        }
+
+        while(!m_events.push(events)) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
+
+        events.clear();
+    });
+
     if(m_dragging) {
         auto const tmp = m_window->get_mouse_coord();
         gol::coord const mouse_coord = { tmp.first, tmp.second };
@@ -157,36 +202,6 @@ auto gol_scene::update(float const elapsed) noexcept -> void
         m_view->translate(glm::vec3{ translate_x, translate_y, 0.0F });
         m_last_mouse_coord = mouse_coord;
     }
-
-    constexpr int cell_target_die = 2;
-    constexpr int cell_target_live = 3;
-
-    for(int i = 0; i < m_height; ++i) {
-        for(int j = 0; j < m_width; ++j) {
-            auto const count = this->count_at({ j, i });
-            bool const alive = this->cell_at({ j, i }) == s_alive;
-
-            if(alive && ((count < cell_target_die) || (count > cell_target_live))) {
-                m_events.emplace_back(coord{ j, i }, false);
-            }
-            else if(!alive && count == cell_target_live) {
-                m_events.emplace_back(coord{ j, i }, true);
-            }
-        }
-    }
-
-    for(auto const& ev : m_events) {
-        if(ev.second) {
-            this->cell_at(ev.first) = s_alive;
-            m_view->set_alive(ev.first);
-        }
-        else {
-            this->cell_at(ev.first) = s_dead;
-            m_view->set_dead(ev.first);
-        }
-    }
-
-    m_events.clear();
 }
 
 auto gol_scene::finished() const noexcept -> bool
