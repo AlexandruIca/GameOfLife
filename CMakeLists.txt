@@ -27,3 +27,11 @@ find_package(glad REQUIRED)
 find_package(glm REQUIRED)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/)
+
+option(BUILD_TESTS "Build tests for ring_buffer" OFF)
+
+if(BUILD_TESTS)
+  find_package(doctest REQUIRED)
+  enable_testing()
+  add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests/)
+endif()
