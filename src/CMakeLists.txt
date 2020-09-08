@@ -21,4 +21,5 @@ target_link_libraries(
           glad::glad
           spdlog::spdlog
           glm::glm
+          docopt::docopt
           gol_thread)
