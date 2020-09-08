@@ -41,7 +41,8 @@ enum class key_event
     vk_left,
     vk_right,
     vk_w,
-    vk_s
+    vk_s,
+    vk_none
 };
 
 using mouse_coord_t = std::pair<int, int>;

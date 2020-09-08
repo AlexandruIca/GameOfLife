@@ -120,7 +120,7 @@ auto window::handle_events() -> void
             break;
         }
         case SDL_KEYDOWN: {
-            key_event key = key_event::vk_space;
+            key_event key = key_event::vk_none;
 
             switch(ev.key.keysym.sym) {
             case SDLK_ESCAPE: {

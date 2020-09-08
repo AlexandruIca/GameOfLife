@@ -41,7 +41,7 @@ private:
     [[nodiscard]] auto count_at(coord pos) const noexcept -> int;
 
 public:
-    gol_scene() noexcept = default;
+    gol_scene() = default;
     gol_scene(gol_scene const&) = delete;
     gol_scene(gol_scene&&) noexcept = delete;
     ~gol_scene() noexcept override = default;
