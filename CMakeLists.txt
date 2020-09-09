@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.13)
 
-project(GameOfLife LANGUAGES CXX)
+project(GameOfLife LANGUAGES CXX VERSION 1.0)
 
 set(CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR} ${CMAKE_MODULE_PATH})
 set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR} ${CMAKE_PREFIX_PATH})
@@ -36,3 +36,7 @@ if(BUILD_TESTS)
   enable_testing()
   add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests/)
 endif()
+
+include(CPack)
+
+install(TARGETS ${CMAKE_PROJECT_NAME})
