@@ -32,7 +32,7 @@ jobs:
 
               cmake -DCMAKE_BUILD_TYPE=Release -DWARNINGS_AS_ERRORS=OFF ..
 
-              cmake --build .
+              cmake --build . --config Release
 
         - name: Package binary
           run: |
