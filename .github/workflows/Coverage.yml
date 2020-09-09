@@ -1,0 +1,89 @@
+name: CodeCoverage
+
+on:
+    push:
+        branches: [ master, gh-actions ]
+
+jobs:
+    coverage:
+        env:
+            GCC_VER: 10
+            CODECOV_TOKEN: "d584dc5d-8b95-4b1a-b605-8438fb328a2f"
+
+        runs-on: ubuntu-latest
+
+        steps:
+        - uses: actions/checkout@v2
+
+        - name: Cache conan packages
+          id: cache-conan
+          uses: actions/cache@v2
+          with:
+              path: /home/alex/.conan/data/
+              key: ${{ runner.os }}-conan
+
+        - name: Install dev tools
+          run: |
+              sudo apt update -y
+
+              sudo apt install -y \
+                gcc-${GCC_VER} \
+                g++-${GCC_VER} \
+                cmake \
+                libgl1-mesa-dev \
+                libxcb-icccm4-dev \
+                libxcb-image0-dev \
+                libxcb-keysyms1-dev \
+                libxcb-render-util0-dev \
+                libxcb-xinerama0-dev \
+                libxcb-xkb-dev \
+                ninja-build \
+                xkb-data \
+                xorg-dev
+
+        - uses: actions/setup-python@v2
+          with:
+              python-version: '3.x'
+
+        - name: Install conan
+          run: |
+              pip3 install conan
+
+        - name: Install dependencies
+          if: steps.cache-conan.outputs.cache-hit != 'true'
+          run: |
+              mkdir build && cd build
+              conan remote add bincrafters "https://api.bintray.com/conan/bincrafters/public-conan"
+              conan install .. -s compiler.libcxx=libstdc++11
+              ls -al
+
+        - name: Build project and tests
+          run: |
+              mkdir -p build && cd build
+
+              conan remote add -f bincrafters "https://api.bintray.com/conan/bincrafters/public-conan"
+              conan install .. -s compiler.libcxx=libstdc++11
+
+              export CC=gcc-${GCC_VER}
+              export CXX=g++-${GCC_VER}
+
+              cmake \
+                -DCMAKE_CXX_FLAGS="-pthread" \
+                -G"Ninja" \
+                -DENABLE_SANITIZER_ADDRESS=ON \
+                -DENABLE_SANITIZER_UNDEFINED=ON \
+                -DBUILD_TESTS=ON \
+                -DENABLE_COVERAGE=ON \
+                ..
+
+              mv compile_commands.json ..
+              cmake --build .
+
+        - name: Run tests
+          run: |
+              cd build
+              ctest -V
+
+        - name: Code coverage
+          run: |
+              bash <(curl -s https://codecov.io/bash) -x gcov-${GCC_VER}
