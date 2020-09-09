@@ -133,8 +133,8 @@ auto gol_scene::update(float const elapsed) noexcept -> void
     ASSERT(m_window != nullptr);
     ASSERT(m_view != nullptr);
 
-    constexpr int cell_target_die = 2;
-    constexpr int cell_target_live = 3;
+    static constexpr int cell_target_die = 2;
+    static constexpr int cell_target_live = 3;
 
     m_future.get();
 
