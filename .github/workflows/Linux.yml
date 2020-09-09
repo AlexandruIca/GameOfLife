@@ -1,0 +1,86 @@
+name: Linux
+
+on:
+    push:
+        branches: [ master, gh-actions ]
+
+jobs:
+    linux:
+        env:
+            GCC_VER: 10
+
+        runs-on: ubuntu-latest
+
+        steps:
+        - uses: actions/checkout@v2
+
+        - name: Cache conan packages
+          id: cache-conan
+          uses: actions/cache@v2
+          with:
+              path: /home/alex/.conan/data/
+              key: ${{ runner.os }}-conan
+
+        - name: Install dev tools
+          run: |
+              sudo apt update -y
+
+              sudo apt install -y \
+                gcc-${GCC_VER} \
+                g++-${GCC_VER} \
+                cmake \
+                libgl1-mesa-dev \
+                libxcb-icccm4-dev \
+                libxcb-image0-dev \
+                libxcb-keysyms1-dev \
+                libxcb-render-util0-dev \
+                libxcb-xinerama0-dev \
+                libxcb-xkb-dev \
+                ninja-build \
+                xkb-data \
+                xorg-dev
+
+        - uses: actions/setup-python@v2
+          with:
+              python-version: '3.x'
+
+        - name: Install conan
+          run: |
+              pip3 install conan
+
+        - name: Install dependencies
+          if: steps.cache-conan.outputs.cache-hit != 'true'
+          run: |
+              mkdir build && cd build
+              conan remote add bincrafters "https://api.bintray.com/conan/bincrafters/public-conan"
+              conan install .. -s compiler.libcxx=libstdc++11
+              ls -al
+
+        - name: Build project
+          run: |
+              mkdir -p build && cd build
+
+              conan remote add -f bincrafters "https://api.bintray.com/conan/bincrafters/public-conan"
+              conan install .. -s compiler.libcxx=libstdc++11
+
+              export CC=gcc-${GCC_VER}
+              export CXX=g++-${GCC_VER}
+
+              cmake \
+                -DCMAKE_CXX_FLAGS="-pthread" \
+                -G"Ninja" \
+                -DCMAKE_BUILD_TYPE=Release \
+                ..
+
+              cmake --build .
+
+        - name: Package binary
+          run: |
+              cd build/
+              cpack -D CPACK_PACKAGE_FILE_NAME=GameOfLifeLinux -G ZIP
+
+        - name: Deploy
+          uses: johnwbyrd/update-release@v1.0.0
+          with:
+              token: ${{ secrets.GITHUB_TOKEN }}
+              files: build/GameOfLifeLinux.zip
