@@ -1,0 +1,46 @@
+name: Windows
+
+on:
+    push:
+        branches: [ master, gh-actions ]
+
+jobs:
+    linux:
+        runs-on: windows-latest
+
+        steps:
+        - uses: actions/checkout@v2
+
+        - uses: actions/setup-python@v2
+          with:
+              python-version: '3.x'
+
+        - name: Install conan
+          run: |
+              pip3 install conan
+
+        - name: Install dependencies
+          run: |
+              mkdir build && cd build
+              conan remote add bincrafters "https://api.bintray.com/conan/bincrafters/public-conan"
+              conan install ..
+              dir
+
+        - name: Build project
+          run: |
+              cd build
+
+              cmake -DCMAKE_BUILD_TYPE=Release ..
+
+              cmake --build .
+
+        - name: Package binary
+          run: |
+              cd build/
+              cpack -D CPACK_PACKAGE_FILE_NAME=GameOfLifeWindows -G ZIP
+
+        - name: Deploy
+          uses: johnwbyrd/update-release@v1.0.0
+          with:
+              token: ${{ secrets.GITHUB_TOKEN }}
+              files: build/GameOfLifeWindows.zip
