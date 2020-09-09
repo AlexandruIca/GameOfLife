@@ -12,6 +12,10 @@
 
 #include "coord.hpp"
 
+// Thanks windows.h
+#undef near
+#undef far
+
 namespace gol {
 
 class camera
