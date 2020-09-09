@@ -11,6 +11,10 @@
 #include <cstdlib>
 #include <string>
 
+// Thanks window.h (again)
+#undef near
+#undef far
+
 namespace {
 
 struct program_description
